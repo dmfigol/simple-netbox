@@ -1,0 +1,109 @@
+version: "3"
+
+
+vars:
+  CODE_DIRS: src/ tests/
+  PYTHON_VERSION: 3.7
+
+tasks:
+  netbox:
+    dir: ~/projects/netbox-docker
+    cmds:
+      - docker compose up -d
+
+  netbox-openapi:
+    desc: download NetBox openapi schema
+    cmds:
+      - wget http://localhost:8000/api/docs/\?format\=openapi -O netbox-openapi.json
+
+  generate-netbox-models:
+    desc: generate pydantic models for NetBox openapi schema
+    cmds:
+      - datamodel-codegen --input netbox-openapi.json --output model.py
+
+  desc: Install required dependencies
+  install:
+    cmds:
+      - poetry install
+
+  reinstall:
+    desc: Delete venv and reinstall required dependencies
+    cmds:
+      - rm -rf .venv
+      - virtualenv -p python{{.PYTHON_VERSION}} .venv
+      - task: install
+
+  update:
+    desc: Update dependencies
+    cmds:
+      - poetry update
+
+  build:
+    desc: Build wheels
+    cmds:
+      - poetry build
+
+  publish:
+    desc: Build and publish wheels and sdist to PyPi
+    cmds:
+      - poetry publish --build -u __token__ -p ${PYPI_TOKEN}
+
+  pytest:
+    desc: Run tests
+    cmds:
+      - poetry run pytest tests
+
+  mypy:
+    desc: Run static type checker mypy
+    cmds:
+      - poetry run mypy {{.CODE_DIRS}}
+
+  black:
+    desc: Run code formatter
+    cmds:
+      - poetry run black {{.CODE_DIRS}}
+
+  black-check:
+    desc: Verify code formatting
+    cmds:
+      - poetry run black {{.CODE_DIRS}} --check
+
+  flake8:
+    desc: Run linter flake8
+    cmds:
+      - poetry run flake8 {{.CODE_DIRS}}
+
+  static-analysis:
+    desc: Run code formatter check, linting, static type analysis
+    cmds:
+      - task: black-check
+      - task: flake8
+      - task: mypy
+
+  build-docs:
+    desc: Build docs
+    cmds:
+      - poetry run mkdocs build --clean --strict
+
+  publish-docs:
+    desc: Publish docs to GitHub Pages
+    cmds:
+      - poetry run mkdocs gh-deploy --force
+
+  test-docs:
+    desc: Verify links in the docs
+    cmds:
+      - PATH=$PATH:. command -v htmltest >/dev/null 2>&1 || { curl https://htmltest.wjdp.uk | bash -s -- -b .; }
+      - PATH=$PATH:. htmltest -c docs/htmltest.yml
+
+  build-test-docs:
+    desc: Build and test link in the docs
+    cmds:
+      - task: build-docs
+      - task: test-docs
+
+  test-suite:
+    desc: Run all tests
+    cmds:
+      - task: static-analysis
+      - task: pytest

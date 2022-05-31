@@ -1,0 +1,49 @@
+[tool.poetry]
+name = "simple-netbox"
+version = "0.1.0"
+description = "NetBox SDK for Python with sync/async support"
+authors = ["Dmitry Figol <git@dmfigol.me>"]
+license = "MIT"
+
+readme = "README.md"
+
+homepage = "https://github.com/dmfigol/simple-netbox"
+repository = "https://github.com/dmfigol/simple-netbox"
+
+keywords = ["netbox"]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Intended Audience :: Developers",
+]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+httpx = "*"
+pydantic = { extras = ["email"], version = "^1.9.0" }
+
+[tool.poetry.dev-dependencies]
+mypy = "*"
+black = "*"
+isort = "*"
+pytest = "*"
+pytest-asyncio = "*"
+flake8 = "*"
+flake8-docstrings = "*"
+flake8-bugbear = "*"
+bpython = "*"
+pdbpp = "*"
+darglint = "*"
+rich = "*"
+vcrpy = "*"
+mkdocs-material = "*"
+
+[build-system]
+requires = ["poetry_core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
